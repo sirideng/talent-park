@@ -1,0 +1,14 @@
+# 人才公园还原依据
+
+本轮目标：将首版椭圆示意场景改为基于公开资料的布局近似。不是测绘模型；未取得实时地形、竣工 BIM 或完整场景扫描。
+
+- AUBE 提供的项目总平面图、剖面、桥梁及广场照片：https://www.archdaily.com/886026/shenzhen-talent-park-aube
+- 总平面：https://www.archdaily.com/886026/shenzhen-talent-park-aube/5a3dd699b22e38fc7f000204-shenzhen-talent-park-aube-talent-park-master-plan
+- 深圳城管官方照片：https://cgj.sz.gov.cn/xsmh/gysz/csgy/content/post_10774672.html
+- 2022 年潮汐广场航拍对照：https://www.sohu.com/a/583892959_497665
+- 中国华润大厦设计方 KPF：https://www.kpf.com/project/china-resources-tower
+- 星光桥位置、星光柱参考：https://swj.sz.gov.cn/ztzl/swhjs/bdfc/content/post_11740850.html
+
+手工从总平面图提取公园边界、主湖、北侧水道、东侧直桥、西岸圆形广场与南岸桥线。坐标保存在 app/geography.ts；北为 -Z、东为 +X。仅以公开照片与设计图作为建模参考，不把第三方原图作为游戏贴图发布。
+
+限制：底图为 2017 年设计资料，近年的改造尚未完整核对；地面起伏、植栽、非地标建筑体量为近似。春笋使用 KPF 描述的收分体型和 56/28 柱几何关系；建筑细部仍经过简化。暂未按精确地理坐标标定。

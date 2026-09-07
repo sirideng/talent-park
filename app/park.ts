@@ -38,7 +38,10 @@ export function createPark(host:HTMLElement,onSelect:(p:typeof PLACES[number])=>
 
  function shape(points:Point[],y:number,m:THREE.Material,depth=0){const sh=new THREE.Shape();points.forEach((p,i)=>i?sh.lineTo(p[0],-p[1]):sh.moveTo(p[0],-p[1]));sh.closePath();const g=depth?new THREE.ExtrudeGeometry(sh,{depth,bevelEnabled:false}):new THREE.ShapeGeometry(sh);g.rotateX(-Math.PI/2);return mesh(g,m,0,y,0)}
  function ribbon(points:Point[],width:number,m:THREE.Material,y=.66,closed=false){const v:number[]=[],ix:number[]=[];const n=points.length;for(let i=0;i<n;i++){const p=points[i],a=points[i===0?(closed?n-1:0):i-1],b=points[i===n-1?(closed?0:n-1):i+1];const len=Math.hypot(b[0]-a[0],b[1]-a[1])||1,nx=-(b[1]-a[1])/len,nz=(b[0]-a[0])/len;v.push(p[0]+nx*width/2,y,p[1]+nz*width/2,p[0]-nx*width/2,y,p[1]-nz*width/2);if(i<n-1||closed){const j=(i+1)%n;ix.push(i*2,j*2,i*2+1,i*2+1,j*2,j*2+1)}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));g.setIndex(ix);g.computeVertexNormals();m.side=THREE.DoubleSide;const surface=mesh(g,m);surface.castShadow=false;return surface}
- const ground=mesh(new THREE.PlaneGeometry(2000,2000),mat('#d8e7e5'),0,-3.5,0);ground.rotation.x=-Math.PI/2;ground.castShadow=false;
+ // Fade the miniature's backdrop into the sky before the far clip plane.
+ // A solid 2000-unit plane previously cut the sun and sky with a horizontal edge.
+ const backdropMaterial=new THREE.ShaderMaterial({uniforms:{night:{value:0}},transparent:true,depthWrite:false,vertexShader:`varying vec3 vWorld;void main(){vec4 w=modelMatrix*vec4(position,1.);vWorld=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}`,fragmentShader:`varying vec3 vWorld;uniform float night;void main(){float a=1.-smoothstep(90.,210.,length(vWorld.xz));vec3 c=mix(vec3(.72,.80,.77),vec3(.045,.10,.13),night);gl_FragColor=vec4(c,a);}`});
+ const ground=mesh(new THREE.PlaneGeometry(440,440),backdropMaterial,0,-3.5,0);ground.rotation.x=-Math.PI/2;ground.castShadow=false;ground.receiveShadow=false;
  const block:Point[]=[[-58,-69],[51,-69],[53,59],[-58,59]];
  shape(block,-3,earth,3.5);shape(block,.51,mat('#c7d0c6'));
  shape(boundary,.53,grass);
@@ -82,16 +85,26 @@ void main(){float ripple=wave(vWorld.x*3.+vWorld.z*1.6+time*.6)*wave(vWorld.z*3.
  for(let i=1;i<68;i++){const t=i/68;const hoop=mesh(new THREE.TorusGeometry(radius(t)+.02,.015,3,56),ribMat,0,t*height,0,tower);hoop.rotation.x=Math.PI/2;hoop.castShadow=false;hoop.receiveShadow=false}box(-18,.75,-46,9,.3,8,white);obstacles.push({x:-18,z:-46,r:4});
  const windowmat=new THREE.MeshStandardMaterial({color:'#bfd3d5',emissive:'#ffdaa0',emissiveIntensity:0,roughness:.35});
  // Simplified contextual volumes, with explicit footprints rather than a random skyline.
- for(const [x,z,w,d,h] of [[-28,-43,4,5,24],[-38,-45,5,5,19],[-39,-33,5,4,27],[-45,-21,4,5,16],[-46,-9,4.5,4,22],[-49,-41,4,5,13]]){box(x,.6+h/2,z,w,h,d,mat('#91a8ac',.35));box(x,h+.8,z,w*.95,.3,d*.95,white);for(let j=0;j<Math.floor(h/.65);j++)box(x,1+j*.65,z+d/2+.02,w*.85,.06,.04,windowmat)}
+ for(const [x,z,w,d,h] of [[-28,-43,4,5,24],[-38,-45,5,5,19],[-49,-41,4,5,13]]){box(x,.6+h/2,z,w,h,d,mat('#91a8ac',.35));box(x,h+.8,z,w*.95,.3,d*.95,white);for(let j=0;j<Math.floor(h/.65);j++)box(x,1+j*.65,z+d/2+.02,w*.85,.06,.04,windowmat)}
  // Northern sports-centre context: broad low roof, far lower than the tower.
  const roof=ellipse(15,7,2.0,white,14,-64,.7);roof.rotation.y=.12;ellipse(10,4.7,2.4,mat('#9bbaaf'),14,-64,.2);ring(13.5,6.1,.18,2.42,metal,14,-64);
- // Shenzhen Bay Culture Square: a roof-landscape and two stone clusters with open atriums.
- // The forms are intentionally low so the park remains visually connected to the skyline.
- const cultureStone=mat('#deded3',.58);cultureStone.flatShading=false;const cultureGlass=mat('#73918f',.22);cultureGlass.flatShading=false;cultureGlass.metalness=.28;
- ellipse(19,8.4,.69,mat('#a8b991'),21,-49,.15);ribbon([[2,-51],[12,-50],[22,-49],[34,-47],[41,-45]],2.1,pathmat,.81);
- function culturePod(x:number,z:number,sx:number,sz:number,turn:number){const group=new THREE.Group();group.position.set(x,1.45,z);group.rotation.y=turn;scene.add(group);const shell=mesh(new THREE.TorusGeometry(2.35,.9,16,56),cultureStone,0,0,0,group);shell.rotation.x=Math.PI/2;shell.scale.set(sx,sz,.58);const glazing=mesh(new THREE.TorusGeometry(1.65,.12,8,48),cultureGlass,0,.11,0,group);glazing.rotation.x=Math.PI/2;glazing.scale.set(sx,sz,.62);ellipse(1.48*sx,1.48*sz,.83,grassLight,x,z,.08);return group}
- culturePod(12,-48,1.7,1.05,-.22);culturePod(31,-46,1.55,1.18,.34);
- for(const [x,z,s] of [[3,-47,.9],[6,-54,.7],[19,-55,.85],[26,-52,.62],[38,-50,.8],[40,-43,.62],[20,-44,.55]]){const stone=mesh(new THREE.SphereGeometry(1.45,18,10),cultureStone,x,1.05,z);stone.scale.set(s*1.5,s*.62,s);ellipse(s*1.3,s*.8,.75,mat('#9eae81'),x,z,.06)}
+ // West of the lake, south of Spring Bamboo: north tall pebble and south broad pebble.
+ // Relative siting / silhouettes checked against Nanshan's published aerial (references.md).
+ const cultureStone=mat('#e7e6df',.58);cultureStone.flatShading=false;const cultureGlass=mat('#3d565b',.22);cultureGlass.flatShading=false;cultureGlass.metalness=.28;
+ shape([[-49,-34],[-26,-34],[-25,-25],[-29,-10],[-36,7],[-48,14]],.72,grassLight);
+ ribbon([[-45,-31],[-34,-29],[-28,-24],[-31,-13],[-38,-7],[-47,-3],[-47,8]],1.25,pathmat,.86);
+ function culturePod(x:number,z:number,rx:number,rz:number,height:number,turn:number){
+  const group=new THREE.Group();group.position.set(x,.82,z);group.rotation.y=turn;scene.add(group);
+  const profile=[new THREE.Vector2(0,0),new THREE.Vector2(.68,0),new THREE.Vector2(.86,height*.07),new THREE.Vector2(.99,height*.32),new THREE.Vector2(1,height*.62),new THREE.Vector2(.91,height*.83),new THREE.Vector2(.69,height*.96),new THREE.Vector2(.30,height),new THREE.Vector2(0,height*.99)];
+  const curve=new THREE.SplineCurve(profile),geometry=new THREE.LatheGeometry(curve.getPoints(64),64);
+  const shell=mesh(geometry,cultureStone,0,0,0,group);shell.scale.set(rx,1,rz);
+  // Dark diagonal window cuts wrap across the closed stone volume, not an open doughnut.
+  for(const [start,end,y] of [[.1,1.75,.43],[2.4,4.35,.67]]){const pts:THREE.Vector3[]=[];for(let i=0;i<=36;i++){const t=i/36,a=start+(end-start)*t;pts.push(new THREE.Vector3(Math.cos(a)*rx*1.002,height*(y+.09*Math.sin(t*Math.PI)),Math.sin(a)*rz*1.002))}const slit=mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),36,.09,5,false),cultureGlass,0,0,0,group);slit.castShadow=false}
+  const skylight=mesh(new THREE.CircleGeometry(1,40),cultureGlass,-rx*.14,height*1.002,-rz*.12,group);skylight.rotation.x=-Math.PI/2;skylight.scale.set(rx*.21,rz*.18,1);
+ }
+ culturePod(-34,-22,5.7,5.0,9.5,-.22);culturePod(-42,2,6.9,5.5,5.3,.3);
+ for(const [x,z,rx,rz,h] of [[-43,-22,3.2,2.6,1.6],[-31,-31,2.4,2,2],[-47,-9,2.4,2.1,1.4],[-43,10,2.5,2,2],[-35,-6,2.1,1.8,1.2]])culturePod(x,z,rx,rz,h,.4);
+ ellipse(3.4,2.3,.86,cultureGlass,-36,-11,.05);ring(3.5,2.4,.35,.94,white,-36,-11);
  // A recognisable slice of Shenzhen Bay MixC beside Spring Bamboo: glazed podium, terraces and WAVE roof.
  const mixc=new THREE.Group();mixc.position.set(-34,.65,-53);scene.add(mixc);const mallGlass=mat('#779ca0',.2);mallGlass.flatShading=false;mallGlass.metalness=.28;
  box(0,1.45,0,17,2.9,6,mallGlass,mixc);box(-1,3.15,-.25,15.5,.55,5.4,white,mixc);box(-2.1,3.65,-.55,11.2,.5,4.1,grassLight,mixc);box(-3.2,4.07,-.8,7.5,.35,3.1,white,mixc);
@@ -99,7 +112,7 @@ void main(){float ripple=wave(vWorld.x*3.+vWorld.z*1.6+time*.6)*wave(vWorld.z*3.
  const waveA=mesh(new THREE.TorusGeometry(2.2,.24,8,32,Math.PI*1.18),white,3.1,3.55,1.25,mixc);waveA.rotation.set(Math.PI/2,0,-.2);waveA.scale.set(1.7,1,.7);
  const waveB=mesh(new THREE.TorusGeometry(1.7,.2,8,32,Math.PI*1.12),white,5.4,3.35,.85,mixc);waveB.rotation.set(Math.PI/2,0,.45);waveB.scale.set(1.45,1,.65);
  const signCanvas=document.createElement('canvas');signCanvas.width=512;signCanvas.height=128;const signContext=signCanvas.getContext('2d')!;signContext.fillStyle='#f2f0de';signContext.fillRect(0,0,512,128);signContext.fillStyle='#244b4d';signContext.font='600 54px Arial';signContext.textAlign='center';signContext.textBaseline='middle';signContext.fillText('MIXC · 深圳湾',256,66);const signTexture=new THREE.CanvasTexture(signCanvas);signTexture.colorSpace=THREE.SRGBColorSpace;textures.push(signTexture);const sign=mesh(new THREE.PlaneGeometry(5.8,1.45),new THREE.MeshBasicMaterial({map:signTexture}),0,1.55,3.08,mixc);sign.castShadow=false;
- contextLabel('深圳湾文化广场',22,6.4,-50);contextLabel('深圳湾万象城',-34,6.2,-53);
+ contextLabel('深圳湾文化广场',-37,12,-13);contextLabel('深圳湾万象城',-34,6.2,-53);
  const lampMat=new THREE.MeshStandardMaterial({color:'#fff2c9',emissive:'#ffce7a',emissiveIntensity:.25});
  const fireflyPositions=new Float32Array(28*3);for(let i=0;i<28;i++){const a=i/28*Math.PI*2+.45*Math.sin(i*1.7),r=3.2+(i%6)*.7;fireflyPositions[i*3]=tx+Math.cos(a)*r;fireflyPositions[i*3+1]=1.2+(i%5)*.36;fireflyPositions[i*3+2]=tz+Math.sin(a)*r}const fireflyGeometry=new THREE.BufferGeometry();fireflyGeometry.setAttribute('position',new THREE.BufferAttribute(fireflyPositions,3));const fireflyMaterial=new THREE.PointsMaterial({color:'#ffe39b',size:.16,transparent:true,opacity:0,depthWrite:false,sizeAttenuation:true});const fireflies=new THREE.Points(fireflyGeometry,fireflyMaterial);scene.add(fireflies);const restLight=new THREE.PointLight('#ffd991',0,16,2);restLight.position.set(sitSpot.x-2.5,3.1,sitSpot.y+1.8);scene.add(restLight);
  function footbridge(points:Point[],width:number,stars=false){ribbon(points,width,white,.94);const pts=points.map(p=>new THREE.Vector3(p[0],1.8,p[1]));for(const side of [-1,1]){const offset=pts.map((p,i)=>{const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)],v=b.clone().sub(a).normalize();return p.clone().add(new THREE.Vector3(-v.z,0,v.x).multiplyScalar(side*width*.46))});line(offset,.035,metal);for(let i=0;i<points.length-1;i++){const a=offset[i],b=offset[i+1],n=Math.ceil(a.distanceTo(b)/1.2);for(let j=0;j<n;j++){const p=a.clone().lerp(b,j/n);box(p.x,1.35,p.z,.04,.82,.04,metal)}}}if(stars){for(let i=0;i<30;i++){const t=(i+.5)/30,x=points[0][0]*(1-t)+points[1][0]*t,z=points[0][1]*(1-t)+points[1][1]*t;cyl(x+(i%2?.85:-.85),2.1,z,.075,2.3,white);box(x+(i%2?.85:-.85),3.3,z,.14,.15,.14,lampMat)}}}
@@ -153,7 +166,7 @@ void main(){float ripple=wave(vWorld.x*3.+vWorld.z*1.6+time*.6)*wave(vWorld.z*3.
   nightBlend=reducedMotion.matches?Number(night):THREE.MathUtils.damp(nightBlend,Number(night),sitting?.18:.85,dt);
   (scene.background as THREE.Color).copy(daySky).lerp(nightSky,nightBlend);
   (scene.fog as THREE.Fog).color.copy(scene.background as THREE.Color);
-  (ground.material as THREE.MeshStandardMaterial).color.copy(scene.background as THREE.Color);
+  backdropMaterial.uniforms.night.value=nightBlend;
   hemi.intensity=THREE.MathUtils.lerp(2.6,.85,nightBlend);sun.intensity=THREE.MathUtils.lerp(3.1,.5,nightBlend);
   sun.color.copy(daySun).lerp(nightSun,nightBlend);sun.position.y=THREE.MathUtils.lerp(65,22,nightBlend);
   skyMaterial.uniforms.night.value=nightBlend;

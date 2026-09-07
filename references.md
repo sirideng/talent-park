@@ -1,5 +1,7 @@
 # 人才公园还原依据
 
+2026-09-07 校正：文化广场移至主湖西侧、春笋以南；移除占据该地块的虚构背景高楼。南山区官网航拍用于核对北馆高耸石状体量、南馆横向宽体量、斜向窗带与小型配馆：https://www.szns.gov.cn/english/news/latestnews/content/post_12439816.html 。政府项目选址说明：https://wtl.sz.gov.cn/attachment/1/1182/1182231/10052490.pdf 。本轮按相对位置和轮廓修正，仍不是测绘级复原。
+
 本轮目标：将首版椭圆示意场景改为基于公开资料的布局近似。不是测绘模型；未取得实时地形、竣工 BIM 或完整场景扫描。
 
 - AUBE 提供的项目总平面图、剖面、桥梁及广场照片：https://www.archdaily.com/886026/shenzhen-talent-park-aube

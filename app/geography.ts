@@ -14,6 +14,9 @@ export const northWalk = trace([[650,264],[637,238],[650,198],[670,169],[708,156
 export const southWalk = trace([[390,645],[433,626],[477,636],[523,625],[566,634],[610,614],[659,630],[704,636],[738,608]]);
 export const tideCenter=fromPlan([518,369]);
 export const spawn=fromPlan([520,350]);
+// The detailed park boundary still drives landscaping, while this larger public
+// block lets the player reach roads, the culture centre and nearby plazas.
+export const exploreBoundary:Point[]=[[-55,-64],[49,-64],[51,57],[-55,57]];
 export const places = [
  {id:'bamboo',name:'春笋天际线',description:'从西北岸望向中国华润大厦。收分的塔身、顶部斜交网格和基座支柱，共同形成熟悉的春笋轮廓。',...xy([561,282])},
  {id:'bridge',name:'人才星光桥',description:'公园东侧的直线跨水桥。沿星光柱向前走，回望西岸的城市天际线。',...xy([741,432])},
@@ -31,4 +34,4 @@ export function groundHeight(x:number,z:number){
  const shoreDistance=Math.min(distanceToPath(x,z,lake,true),distanceToPath(x,z,northWater,true));
  const shoreRelief=Math.min(1,Math.max(0,(shoreDistance-2)/3));
  const hill=(cx:number,cz:number,sx:number,sz:number,h:number)=>h*Math.exp(-((x-cx)**2/sx**2+(z-cz)**2/sz**2));const relief=hill(28,-29,9,13,2.2)+hill(15,45,13,5,.7);const pathDistance=Math.min(distanceToPath(x,z,shoreWalk,true),distanceToPath(x,z,northWalk),distanceToPath(x,z,southWalk));return .6+relief*shoreRelief*Math.min(1,Math.max(0,(pathDistance-1.5)/3))}
-export function walkable(x:number,z:number){return inside(x,z,boundary)&&(!isWater(x,z)||bridgeHeight(x,z)!==null)}
+export function walkable(x:number,z:number){return inside(x,z,exploreBoundary)&&(!isWater(x,z)||bridgeHeight(x,z)!==null)}

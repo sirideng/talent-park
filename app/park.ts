@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { createWavePlaza, wavePlaza } from './wave-plaza';
 import { boundary, lake, northWater, starBridge, piBridge, northBridge, shoreWalk, northWalk, southWalk, tideCenter, spawn, places, inside, isWater, distanceToPath, groundHeight, bridgeHeight, walkable, type Point } from './geography';
 
 export const PLACES = places;
@@ -36,14 +37,16 @@ export function createPark(host:HTMLElement,onSelect:(p:typeof PLACES[number])=>
  cloudLayout.forEach(([x,y,z,w,h],i)=>{const cm=new THREE.SpriteMaterial({map:cloudMap,color:i%2?'#ff9a68':'#ffc08f',transparent:true,opacity:.72,depthWrite:false,fog:false,toneMapped:false});cloudMaterials.push(cm);const cloud=new THREE.Sprite(cm);cloud.position.set(x,y,z);cloud.scale.set(w,h,1);cloud.renderOrder=-1;scene.add(cloud)});
  function contextLabel(text:string,x:number,y:number,z:number){const c=document.createElement('canvas');c.width=512;c.height=112;const ctx=c.getContext('2d')!;ctx.fillStyle='#f8f5e9e6';ctx.beginPath();ctx.roundRect(3,3,506,106,53);ctx.fill();ctx.fillStyle='#28595a';ctx.font='600 34px Arial, Microsoft YaHei';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,256,57);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;textures.push(t);const label=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false,depthWrite:false,toneMapped:false}));label.position.set(x,y,z);label.scale.set(11.5,2.5,1);label.renderOrder=6;scene.add(label);contextLabels.push(label)}
 
- function shape(points:Point[],y:number,m:THREE.Material,depth=0){const sh=new THREE.Shape();points.forEach((p,i)=>i?sh.lineTo(p[0],-p[1]):sh.moveTo(p[0],-p[1]));sh.closePath();const g=depth?new THREE.ExtrudeGeometry(sh,{depth,bevelEnabled:false}):new THREE.ShapeGeometry(sh);g.rotateX(-Math.PI/2);return mesh(g,m,0,y,0)}
+ function shape(points:Point[],y:number,m:THREE.Material,depth=0,excavate=false){const sh=new THREE.Shape();points.forEach((p,i)=>i?sh.lineTo(p[0],-p[1]):sh.moveTo(p[0],-p[1]));sh.closePath();if(excavate){const hole=new THREE.Path();hole.absarc(wavePlaza.x,-wavePlaza.z,wavePlaza.radius,0,Math.PI*2,true);sh.holes.push(hole)}const g=depth?new THREE.ExtrudeGeometry(sh,{depth,bevelEnabled:false,curveSegments:64}):new THREE.ShapeGeometry(sh,64);g.rotateX(-Math.PI/2);return mesh(g,m,0,y,0)}
  function ribbon(points:Point[],width:number,m:THREE.Material,y=.66,closed=false){const v:number[]=[],ix:number[]=[];const n=points.length;for(let i=0;i<n;i++){const p=points[i],a=points[i===0?(closed?n-1:0):i-1],b=points[i===n-1?(closed?0:n-1):i+1];const len=Math.hypot(b[0]-a[0],b[1]-a[1])||1,nx=-(b[1]-a[1])/len,nz=(b[0]-a[0])/len;v.push(p[0]+nx*width/2,y,p[1]+nz*width/2,p[0]-nx*width/2,y,p[1]-nz*width/2);if(i<n-1||closed){const j=(i+1)%n;ix.push(i*2,j*2,i*2+1,i*2+1,j*2,j*2+1)}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));g.setIndex(ix);g.computeVertexNormals();m.side=THREE.DoubleSide;const surface=mesh(g,m);surface.castShadow=false;return surface}
  // Fade the miniature's backdrop into the sky before the far clip plane.
  // A solid 2000-unit plane previously cut the sun and sky with a horizontal edge.
  const backdropMaterial=new THREE.ShaderMaterial({uniforms:{night:{value:0}},transparent:true,depthWrite:false,vertexShader:`varying vec3 vWorld;void main(){vec4 w=modelMatrix*vec4(position,1.);vWorld=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}`,fragmentShader:`varying vec3 vWorld;uniform float night;void main(){float a=1.-smoothstep(90.,210.,length(vWorld.xz));vec3 c=mix(vec3(.72,.80,.77),vec3(.045,.10,.13),night);gl_FragColor=vec4(c,a);}`});
  const ground=mesh(new THREE.PlaneGeometry(440,440),backdropMaterial,0,-3.5,0);ground.rotation.x=-Math.PI/2;ground.castShadow=false;ground.receiveShadow=false;
  const block:Point[]=[[-58,-69],[51,-69],[53,59],[-58,59]];
- shape(block,-3,earth,3.5);shape(block,.51,mat('#c7d0c6'));
+ shape(block,-3,earth,3.5,true);shape(block,.51,mat('#c7d0c6'),0,true);
+ const waveScene=createWavePlaza(scene);
+ textures.push(waveScene.texture);
  shape(boundary,.53,grass);
  // Terrain triangles and walking height share the same modest relief model.
  const tv:number[]=[];for(let x=-47;x<46;x+=1.1)for(let z=-59;z<55;z+=1.1){for(const tri of [[[x,z],[x+1.1,z],[x,z+1.1]],[[x+1.1,z],[x+1.1,z+1.1],[x,z+1.1]]]){if(tri.every(p=>inside(p[0],p[1],boundary))){for(const p of tri)tv.push(p[0],groundHeight(p[0],p[1]),p[1])}}}const tg=new THREE.BufferGeometry();tg.setAttribute('position',new THREE.Float32BufferAttribute(tv,3));tg.computeVertexNormals();const terrainMat=mat('#779a58');terrainMat.side=THREE.DoubleSide;mesh(tg,terrainMat);
@@ -175,6 +178,7 @@ void main(){float ripple=wave(vWorld.x*3.+vWorld.z*1.6+time*.6)*wave(vWorld.z*3.
   sunMaterial.color.set('#ffd17a').lerp(new THREE.Color('#e78358'),nightBlend);
   cloudMaterials.forEach((material,index)=>{material.color.set(index%2?'#ff9a68':'#ffc08f').lerp(new THREE.Color(index%2?'#665b7e':'#786780'),nightBlend);material.opacity=THREE.MathUtils.lerp(.72,.20,nightBlend)});
   lampMat.emissiveIntensity=THREE.MathUtils.lerp(.25,4,nightBlend);
+  waveScene.update(elapsed,nightBlend);
   windowmat.emissiveIntensity=THREE.MathUtils.smoothstep(nightBlend,.25,.85)*1.6;
   watermat.uniforms.night.value=nightBlend;restMarkerMat.opacity=walking&&!sitting?.38+.18*Math.sin(elapsed*2):0;fireflyMaterial.opacity=THREE.MathUtils.smoothstep(nightBlend,.38,.9)*(.58+.24*Math.sin(elapsed*1.8));fireflies.rotation.y=elapsed*.012;restLight.intensity=THREE.MathUtils.smoothstep(nightBlend,.3,1)*1.8;
  }

@@ -169,7 +169,10 @@ void main(){float ripple=wave(vWorld.x*3.+vWorld.z*1.6+time*.6)*wave(vWorld.z*3.
  // OrbitControls keeps the player at the centre of a third-person view. Raising
  // that centre while dragging upward makes tall buildings genuinely viewable,
  // instead of merely moving the camera around the player's feet.
- const pointerMove=(e:PointerEvent)=>{if(!viewDragging||!walking||sitting||transitioning)return;const dy=lastPointerY-e.clientY;lastPointerY=e.clientY;if(Math.abs(dy)<.1)return;const next=THREE.MathUtils.clamp(lookOffset+dy*.055,-.65,22);controls.target.y+=next-lookOffset;lookOffset=next};
+ const pointerMove=(e:PointerEvent)=>{if(!viewDragging||!walking||sitting||transitioning)return;const dy=lastPointerY-e.clientY;lastPointerY=e.clientY;if(Math.abs(dy)<.1)return;const next=THREE.MathUtils.clamp(lookOffset+dy*.045,-.5,15),previous=lookOffset;controls.target.y+=next-previous;
+  // Pull back on the ground plane as the gaze rises. This frames the player at
+  // the bottom of the shot while leaving enough vertical room for Spring Bamboo.
+  const horizontal=new THREE.Vector2(camera.position.x-controls.target.x,camera.position.z-controls.target.z),current=Math.max(.01,horizontal.length()),base=Math.max(8,current-Math.max(0,previous)*2.2),desired=base+Math.max(0,next)*2.2;horizontal.multiplyScalar(desired/current);camera.position.x=controls.target.x+horizontal.x;camera.position.z=controls.target.z+horizontal.y;const cameraFloor=floorHeight(camera.position.x,camera.position.z);camera.position.y=Math.max(cameraFloor+2.8,player.position.y+4.1+Math.max(0,next)*.05);lookOffset=next};
  const pointerUp=(e:PointerEvent)=>{viewDragging=false;if(Math.hypot(e.clientX-downX,e.clientY-downY)>6)return;const r=renderer.domElement.getBoundingClientRect();pointer.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);raycaster.setFromCamera(pointer,camera);const hits=raycaster.intersectObjects(pickables.filter(o=>o.visible&&o.parent?.visible));if(hits.length){if(walking)interact();else onSelect(hits[0].object.userData.place)}};
  const pointerCancel=()=>{viewDragging=false};
  renderer.domElement.addEventListener('pointerdown',pointerDown);renderer.domElement.addEventListener('pointermove',pointerMove);renderer.domElement.addEventListener('pointerup',pointerUp);renderer.domElement.addEventListener('pointercancel',pointerCancel);
@@ -186,7 +189,7 @@ void main(){float ripple=wave(vWorld.x*3.+vWorld.z*1.6+time*.6)*wave(vWorld.z*3.
   beginTransition();
   if(immediate||reducedMotion.matches){camera.position.copy(cameraGoal);controls.target.copy(targetGoal);finishTransition()}
  }
- function finishTransition(){transitioning=false;controls.minDistance=sitting?6:walking?5:40;controls.maxDistance=sitting?18:walking?25:210;controls.minPolarAngle=walking?.04:.18;controls.maxPolarAngle=sitting?Math.PI*.56:walking?Math.PI*.64:Math.PI*.47;controls.enabled=true;controls.update()}
+ function finishTransition(){transitioning=false;controls.minDistance=sitting?6:walking?5:40;controls.maxDistance=sitting?18:walking?60:210;controls.minPolarAngle=walking?.08:.18;controls.maxPolarAngle=sitting?Math.PI*.56:walking?Math.PI*.58:Math.PI*.47;controls.enabled=true;controls.update()}
  function setNight(value:boolean){night=value}
  function updateAtmosphere(dt:number){
   nightBlend=reducedMotion.matches?Number(night):THREE.MathUtils.damp(nightBlend,Number(night),sitting?.18:.85,dt);

@@ -106,7 +106,7 @@ void main(){float ripple=wave(vWorld.x*3.+vWorld.z*1.6+time*.6)*wave(vWorld.z*3.
   const skylight=mesh(new THREE.CircleGeometry(1,40),cultureGlass,-rx*.14,height*1.002,-rz*.12,group);skylight.rotation.x=-Math.PI/2;skylight.scale.set(rx*.21,rz*.18,1);
  }
  culturePod(-34,-22,5.7,5.0,9.5,-.22);culturePod(-42,2,6.9,5.5,5.3,.3);
- for(const [x,z,rx,rz,h] of [[-43,-22,3.2,2.6,1.6],[-31,-31,2.4,2,2],[-47,-9,2.4,2.1,1.4],[-43,10,2.5,2,2],[-35,-6,2.1,1.8,1.2]])culturePod(x,z,rx,rz,h,.4);
+ for(const [x,z,rx,rz,h] of [[-43,-22,3.2,2.6,1.6],[-42,-31,2.4,2,2],[-47,-9,2.4,2.1,1.4],[-43,10,2.5,2,2],[-35,-6,2.1,1.8,1.2]])culturePod(x,z,rx,rz,h,.4);
  ellipse(3.4,2.3,.86,cultureGlass,-36,-11,.05);ring(3.5,2.4,.35,.94,white,-36,-11);
  // A recognisable slice of Shenzhen Bay MixC beside Spring Bamboo: glazed podium, terraces and WAVE roof.
  const mixc=new THREE.Group();mixc.position.set(-34,.65,-53);scene.add(mixc);const mallGlass=mat('#779ca0',.2);mallGlass.flatShading=false;mallGlass.metalness=.28;

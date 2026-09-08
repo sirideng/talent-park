@@ -2,7 +2,9 @@ import * as THREE from 'three';
 
 // Approximate placement beside Spring Bamboo; the supplied night photograph
 // guides the stairs, luminous fins and i-heart-sz sign, not surveyed dimensions.
-export const wavePlaza = { x: -10, z: -53, radius: 6.1, floor: -1.65, top: .51 };
+// The plaza sits on the park-facing side of China Resources Tower. From the
+// park, the pavilion reads to the tower's left and the sunken circle in front.
+export const wavePlaza = { x: -26, z: -36, radius: 6.1, floor: -1.65, top: .51 };
 
 export function createWavePlaza(scene: THREE.Scene) {
  const {x,z,radius,floor,top}=wavePlaza;

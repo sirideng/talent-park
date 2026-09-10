@@ -1,0 +1,257 @@
+.bay-mode .masthead {
+  background: #182c48cc;
+  border: 1px solid #c7d7e02b;
+  border-radius: 18px;
+  padding: 12px 18px;
+  color: #f2e9d6;
+}
+.bay-mode .masthead h1 {
+  font-size: 24px;
+}
+.bay-mode .masthead h1 span {
+  display: none;
+}
+.bay-mode .eyebrow {
+  color: #e2cba9;
+}
+.bay-mode .brand-mark {
+  color: #e2cba9;
+}
+.bay-mode .back-to-planet {
+  top: 124px;
+}
+.bay-hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: #f4ecda;
+}
+.bay-hud button {
+  pointer-events: auto;
+  cursor: pointer;
+  border: 1px solid #dbe4df45;
+  background: #203d4eda;
+  color: #f4ecda;
+  border-radius: 22px;
+  padding: 10px 16px;
+  min-height: 44px;
+  font-size: 14px;
+}
+.bay-hud button:hover {
+  background: #3c5a65;
+}
+.bay-hud button:focus-visible {
+  outline: 3px solid #ffe1a3;
+  outline-offset: 3px;
+}
+.bay-hud button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.bay-hud [hidden] {
+  display: none !important;
+}
+.bay-note {
+  position: absolute;
+  top: 174px;
+  left: 36px;
+  background: #182c48ba;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+.bay-stamps {
+  position: absolute;
+  right: 36px;
+  top: 48px;
+  font-size: 14px;
+  border-radius: 18px;
+  background: #182c48ca;
+  padding: 12px 18px;
+}
+.bay-story {
+  position: absolute;
+  bottom: 38px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(580px, calc(100% - 440px));
+  padding: 22px 26px;
+  border: 1px solid #dbe4df45;
+  border-radius: 26px;
+  background: #153242e8;
+  backdrop-filter: blur(12px);
+  pointer-events: auto;
+}
+.bay-story h2 {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0 30px 12px 0;
+}
+.bay-story p {
+  font-size: 16px;
+  line-height: 1.65;
+  margin: 0 0 12px;
+}
+.bay-fold {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  padding: 0 !important;
+  width: 44px;
+  background: transparent !important;
+  border: none !important;
+}
+.bay-progress {
+  font-size: 14px;
+  color: #ffe0a5;
+  margin: 8px 0;
+}
+.bay-feedback {
+  font-size: 14px;
+  color: #f2c5a3;
+}
+.bay-feedback:empty {
+  display: none;
+}
+.bay-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.bay-actions button:first-child {
+  background: #eedbb5;
+  color: #1c3a49;
+}
+.bay-drive {
+  position: absolute;
+  left: 30px;
+  bottom: 40px;
+  display: grid;
+  grid-template-columns: repeat(3, 62px);
+  gap: 7px;
+}
+.bay-drive button {
+  touch-action: none;
+  user-select: none;
+  padding: 6px;
+  font-size: 16px;
+  min-height: 54px;
+}
+.bay-drive [data-key='w'] {
+  grid-column: 2;
+}
+.bay-drive [data-key='a'] {
+  grid-column: 1;
+}
+.bay-drive [data-key='shift'] {
+  grid-column: 2;
+}
+.bay-instruction {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  white-space: nowrap;
+  text-shadow: 0 1px 5px #000;
+}
+.bay-reset {
+  position: absolute;
+  right: 24px;
+  bottom: 44px;
+}
+.bay-hud.folded .bay-story p,
+.bay-hud.folded .bay-progress,
+.bay-hud.folded .bay-feedback {
+  display: none;
+}
+.bay-hud.folded .bay-story {
+  padding: 14px 22px;
+}
+.bay-hud.folded h2 {
+  margin-bottom: 0;
+}
+@media (max-width: 700px) {
+  .bay-mode .masthead {
+    top: 16px;
+    left: 14px;
+    padding: 9px 12px;
+    gap: 8px;
+  }
+  .bay-mode .masthead h1 {
+    font-size: 16px;
+  }
+  .bay-mode .masthead .eyebrow {
+    font-size: 12px;
+    letter-spacing: 1.5px;
+  }
+  .bay-mode .brand-mark {
+    display: none;
+  }
+  .bay-mode .back-to-planet {
+    top: 90px;
+    left: 14px;
+    font-size: 12px;
+  }
+  .bay-note {
+    top: 141px;
+    left: 14px;
+    font-size: 12px;
+  }
+  .bay-stamps {
+    top: 179px;
+    left: 14px;
+    right: auto;
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+  .bay-story {
+    width: calc(100% - 28px);
+    bottom: 206px;
+    padding: 16px 18px;
+    max-height: 36dvh;
+    overflow: auto;
+    border-radius: 20px;
+  }
+  .bay-story h2 {
+    font-size: 17px;
+    margin-bottom: 7px;
+  }
+  .bay-story p {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .bay-actions {
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .bay-actions button {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+  .bay-drive {
+    bottom: 16px;
+    left: 16px;
+    grid-template-columns: repeat(3, 54px);
+    gap: 5px;
+  }
+  .bay-drive button {
+    min-height: 52px;
+    font-size: 14px;
+  }
+  .bay-reset {
+    right: 16px;
+    bottom: 28px;
+  }
+  .bay-instruction {
+    display: none;
+  }
+  .bay-hud:has(.bay-drive[hidden]) .bay-story {
+    bottom: 24px;
+    max-height: 40dvh;
+  }
+}
+.bay-hud:has(.bay-drive[hidden]) .bay-reset {
+  display: none;
+}

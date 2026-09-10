@@ -27,11 +27,9 @@ function xy(p:Point){const [x,z]=fromPlan(p);return{x,z}}
 export function inside(x:number,z:number,polygon:Point[]){let yes=false;for(let i=0,j=polygon.length-1;i<polygon.length;j=i++){const a=polygon[i],b=polygon[j];if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])yes=!yes}return yes}
 export function distanceToPath(x:number,z:number,points:Point[],closed=false){let nearest=Infinity;for(let i=0;i<points.length-(closed?0:1);i++){const a=points[i],b=points[(i+1)%points.length],dx=b[0]-a[0],dz=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz||1)));nearest=Math.min(nearest,Math.hypot(x-a[0]-t*dx,z-a[1]-t*dz))}return nearest}
 export const isWater=(x:number,z:number)=>inside(x,z,lake)||inside(x,z,northWater);
-export function bridgeHeight(x:number,z:number){if(distanceToPath(x,z,starBridge)<1.1)return .94;if(distanceToPath(x,z,piBridge)<.9)return .94;if(distanceToPath(x,z,northBridge)<.8)return .94;return null}
 export function groundHeight(x:number,z:number){
  // Keep the entire shoreline grid cell below water, including interpolated triangles.
  if(isWater(x,z))return .55;
  const shoreDistance=Math.min(distanceToPath(x,z,lake,true),distanceToPath(x,z,northWater,true));
  const shoreRelief=Math.min(1,Math.max(0,(shoreDistance-2)/3));
  const hill=(cx:number,cz:number,sx:number,sz:number,h:number)=>h*Math.exp(-((x-cx)**2/sx**2+(z-cz)**2/sz**2));const relief=hill(28,-29,9,13,2.2)+hill(15,45,13,5,.7);const pathDistance=Math.min(distanceToPath(x,z,shoreWalk,true),distanceToPath(x,z,northWalk),distanceToPath(x,z,southWalk));return .6+relief*shoreRelief*Math.min(1,Math.max(0,(pathDistance-1.5)/3))}
-export function walkable(x:number,z:number){return inside(x,z,exploreBoundary)&&(!isWater(x,z)||bridgeHeight(x,z)!==null)}

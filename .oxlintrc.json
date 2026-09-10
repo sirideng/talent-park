@@ -31,6 +31,32 @@
     "coverage/**",
     "next-env.d.ts"
   ],
+  "overrides": [
+    {
+      "files": ["components/ui/input-group.tsx", "components/ui/breadcrumb.tsx", "components/ui/spinner.tsx", "components/ui/input-otp.tsx", "components/ui/button-group.tsx", "components/ui/carousel.tsx", "components/ui/field.tsx", "components/ui/item.tsx"],
+      "rules": {"jsx-a11y/prefer-tag-over-role": "off"}
+    },
+    {
+      "files": ["components/ui/input-group.tsx"],
+      "rules": {"jsx-a11y/click-events-have-key-events": "off", "jsx-a11y/no-noninteractive-element-interactions": "off"}
+    },
+    {
+      "files": ["components/ui/label.tsx"],
+      "rules": {"jsx-a11y/label-has-associated-control": "off"}
+    },
+    {
+      "files": ["components/ui/pagination.tsx"],
+      "rules": {"jsx-a11y/anchor-has-content": "off"}
+    },
+    {
+      "files": ["components/ui/carousel.tsx", "hooks/use-mobile.ts"],
+      "rules": {"react/react-compiler": "off"}
+    },
+    {
+      "files": ["components/ui/chart.tsx"],
+      "rules": {"typescript/restrict-template-expressions": "off"}
+    }
+  ],
   "rules": {
     "no-array-constructor": "error",
     "no-var": "error",

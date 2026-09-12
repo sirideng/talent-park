@@ -1,4 +1,5 @@
 /** Quiet original synthesis. No recordings, timers or sounds before a gesture. */
+import { audioOutput, releaseAudio } from '../shared/preferences';
 export class HarborAmbience {
   private context: AudioContext | null = null;
   private nodes: AudioNode[] = [];
@@ -22,7 +23,7 @@ export class HarborAmbience {
       });
       const gain = c.createGain();
       gain.gain.value = 0.12;
-      gain.connect(c.destination);
+      gain.connect(audioOutput(c));
       const low = c.createBiquadFilter();
       low.type = 'lowpass';
       low.frequency.value = 850;
@@ -71,6 +72,7 @@ export class HarborAmbience {
       void this.context.suspend().catch(() => {});
   }
   dispose() {
+    if (this.context) releaseAudio(this.context);
     this.disposed = true;
     this.stop();
     if (this.context && this.context.state !== 'closed')

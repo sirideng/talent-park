@@ -1,6 +1,11 @@
 import { SceneResources } from './scenes/resources';
 import { ownThreeScene } from './scenes/three-resources';
 import * as THREE from 'three';
+import {
+  audioOutput,
+  releaseAudio,
+  reducedMotion as prefersReducedMotion,
+} from './shared/preferences';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createWavePlaza, wavePlaza } from './wave-plaza';
 import {
@@ -1255,7 +1260,11 @@ void main(){float ripple=wave(vWorld.x*3.+vWorld.z*1.6+time*.6)*wave(vWorld.z*3.
     last = performance.now(),
     elapsed = 0,
     nearbyId = '';
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const reducedMotion = {
+    get matches() {
+      return prefersReducedMotion();
+    },
+  };
   let nightBlend = 0,
     transitioning = false;
   const cameraGoal = new THREE.Vector3(),
@@ -1273,11 +1282,12 @@ void main(){float ripple=wave(vWorld.x*3.+vWorld.z*1.6+time*.6)*wave(vWorld.z*3.
     if (audio) return audio;
     const context = new AudioContext();
     resources.defer(() => {
+      releaseAudio(context);
       if (context.state !== 'closed') void context.close().catch(() => {});
     });
     const gain = context.createGain();
     gain.gain.value = 0;
-    gain.connect(context.destination);
+    gain.connect(audioOutput(context));
     const sources: AudioBufferSourceNode[] = [];
     for (const [cutoff, volume] of [
       [520, 0.55],
@@ -1378,6 +1388,7 @@ void main(){float ripple=wave(vWorld.x*3.+vWorld.z*1.6+time*.6)*wave(vWorld.z*3.
     }
     onSelect(p);
   }
+  const touchMove = new THREE.Vector2();
   const keys = new Set<string>(),
     visited = new Set<string>();
   const raycaster = new THREE.Raycaster(),
@@ -1751,10 +1762,12 @@ void main(){float ripple=wave(vWorld.x*3.+vWorld.z*1.6+time*.6)*wave(vWorld.z*3.
     if (walking && !sitting && !transitioning) {
       const dx =
           Number(keys.has('d') || keys.has('arrowright')) -
-          Number(keys.has('a') || keys.has('arrowleft')),
+          Number(keys.has('a') || keys.has('arrowleft')) +
+          touchMove.x,
         dz =
           Number(keys.has('s') || keys.has('arrowdown')) -
-          Number(keys.has('w') || keys.has('arrowup'));
+          Number(keys.has('w') || keys.has('arrowup')) +
+          touchMove.y;
       const before = player.position.clone();
       const forward = camera.position.clone().sub(controls.target);
       forward.y = 0;
@@ -1764,6 +1777,8 @@ void main(){float ripple=wave(vWorld.x*3.+vWorld.z*1.6+time*.6)*wave(vWorld.z*3.
         .multiplyScalar(dz)
         .addScaledVector(right, dx)
         .normalize();
+      if (touchMove.lengthSq() > 0)
+        move.multiplyScalar(Math.min(1, touchMove.length()));
       player.position.copy(physics.update(dt, move, keys.has('shift')));
       const delta = player.position.clone().sub(before);
       camera.position.add(delta);
@@ -1883,8 +1898,19 @@ void main(){float ripple=wave(vWorld.x*3.+vWorld.z*1.6+time*.6)*wave(vWorld.z*3.
       camera.position.copy(controls.target).add(v);
       controls.update();
     },
-    key: (k: string, pressed: boolean) =>
-      pressed ? keys.add(k.toLowerCase()) : keys.delete(k.toLowerCase()),
+    move: (x: number, y: number) => touchMove.set(x, y),
+    key: (k: string, pressed: boolean) => {
+      if (pressed && k === ' ') {
+        physics.jump();
+        return;
+      }
+      if (pressed && k === 'e') {
+        interact();
+        return;
+      }
+      if (pressed) keys.add(k.toLowerCase());
+      else keys.delete(k.toLowerCase());
+    },
     getState: () => ({
       walking,
       sitting,

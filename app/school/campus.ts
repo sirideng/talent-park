@@ -153,22 +153,29 @@ export function createCampus(scene: THREE.Scene, physics: PlayerController) {
     seed = (seed * 1664525 + 1013904223) >>> 0;
     return seed / 4294967296;
   };
+  const foliage = new THREE.InstancedMesh(
+      new THREE.IcosahedronGeometry(1.3, 1),
+      new THREE.MeshStandardMaterial({
+        color: '#ffffff',
+        flatShading: true,
+        roughness: 0.9,
+      }),
+      50,
+    ),
+    treePose = new THREE.Object3D();
+  foliage.castShadow = true;
+  scene.add(foliage);
   for (let i = 0; i < 50; i++) {
     const side = i % 2 ? -1 : 1,
       x = side * (47 + random() * 4),
       z = -28 + random() * 64,
       s = 0.75 + random() * 0.45;
     pole(x, s, z, 0.14 * s, s * 2);
-    const crown = new THREE.Mesh(
-      new THREE.IcosahedronGeometry(1.3 * s, 1),
-      new THREE.MeshStandardMaterial({
-        color: i % 3 ? '#54785b' : '#78936b',
-        flatShading: true,
-      }),
-    );
-    crown.position.set(x, 2.6 * s, z);
-    scene.add(crown);
-    crown.castShadow = true;
+    treePose.position.set(x, 2.6 * s, z);
+    treePose.scale.setScalar(s);
+    treePose.updateMatrix();
+    foliage.setMatrixAt(i, treePose.matrix);
+    foliage.setColorAt(i, new THREE.Color(i % 3 ? '#54785b' : '#78936b'));
     physics.add(
       RAPIER.ColliderDesc.ball(1.3 * s).setTranslation(x, 2.6 * s, z),
       'canopy',

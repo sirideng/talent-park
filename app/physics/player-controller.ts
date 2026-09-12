@@ -32,7 +32,12 @@ export class PlayerController {
   private accumulator = 0;
   private jumpRequested = false;
   private disposed = false;
-  constructor(start: THREE.Vector3) {
+  private cameraBall = new RAPIER.Ball(0.22);
+  private clearBall = new RAPIER.Ball(0.23);
+  constructor(
+    start: THREE.Vector3,
+    private bounds = { x: 65, z: 76, minY: -8 },
+  ) {
     this.motor.setMaxSlopeClimbAngle(Math.PI / 4);
     this.motor.setMinSlopeSlideAngle(Math.PI * 0.27);
     this.motor.enableAutostep(0.3, 0.18, false);
@@ -116,7 +121,9 @@ export class PlayerController {
         this.solid,
       );
       const delta = this.motor.computedMovement();
-      this.position.add(new THREE.Vector3(delta.x, delta.y, delta.z));
+      this.position.x += delta.x;
+      this.position.y += delta.y;
+      this.position.z += delta.z;
       this.grounded = this.motor.computedGrounded();
       if (this.grounded && this.velocity.y < 0) this.velocity.y = 0;
       if (delta.y < this.velocity.y * step - 0.001 && this.velocity.y > 0)
@@ -145,9 +152,9 @@ export class PlayerController {
       if (this.grounded && !hazard) this.safePosition.copy(this.position);
       if (
         hazard ||
-        this.position.y < -8 ||
-        Math.abs(this.position.x) > 65 ||
-        Math.abs(this.position.z) > 76
+        this.position.y < this.bounds.minY ||
+        Math.abs(this.position.x) > this.bounds.x ||
+        Math.abs(this.position.z) > this.bounds.z
       ) {
         this.resets++;
         this.teleport(this.safePosition);
@@ -187,7 +194,7 @@ export class PlayerController {
       origin,
       { x: 0, y: 0, z: 0, w: 1 },
       direction,
-      new RAPIER.Ball(0.22),
+      this.cameraBall,
       0.03,
       length,
       true,
@@ -204,7 +211,7 @@ export class PlayerController {
     this.world.intersectionsWithShape(
       point,
       { x: 0, y: 0, z: 0, w: 1 },
-      new RAPIER.Ball(0.23),
+      this.clearBall,
       () => {
         clear = false;
         return false;
@@ -229,6 +236,9 @@ export class PlayerController {
  * This avoids feeding collision corrections back into orbit damping (camera jitter).
  */
 export class ThirdPersonCamera {
+  private pivot = new THREE.Vector3();
+  private elevated = new THREE.Vector3();
+  private direction = new THREE.Vector3();
   private arm = Infinity;
   private lift = 0;
   resolve(
@@ -238,7 +248,8 @@ export class ThirdPersonCamera {
     dt: number,
   ) {
     // Above the hat: even a fully retracted arm cannot enter the player's head.
-    const pivot = feet.clone().add(new THREE.Vector3(0, 1.95, 0));
+    const pivot = this.pivot.copy(feet);
+    pivot.y += 1.95;
     // The player can stand under a low crown. A cast starting inside foliage
     // returns zero; lift the boom origin above it instead of rendering inside it.
     let requiredLift = 0;
@@ -250,11 +261,10 @@ export class ThirdPersonCamera {
       requiredLift > this.lift
         ? requiredLift
         : THREE.MathUtils.damp(this.lift, requiredLift, 5, dt);
-    const elevated = feet
-      .clone()
-      .add(new THREE.Vector3(0, 1.95 + this.lift, 0));
+    const elevated = this.elevated.copy(feet);
+    elevated.y += 1.95 + this.lift;
     if (physics.cameraClear(elevated)) pivot.copy(elevated);
-    const direction = desired.clone().sub(pivot),
+    const direction = this.direction.copy(desired).sub(pivot),
       length = direction.length();
     direction.normalize();
     const allowed = physics.cameraDistance(pivot, direction, length);

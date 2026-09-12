@@ -199,15 +199,15 @@ try {
     .waitFor();
   await page.evaluate(() =>
     localStorage.setItem(
-      'shenzhen-memory:bay:v1',
+      'shenzhen-memory:unified:v1',
       JSON.stringify({
         version: 1,
-        ride: 40,
+        chapters: {'shenzhen-bay': {version:1, ride: 40,
         gulls: 0,
         sunrise: 0,
         parked: false,
         complete: false,
-        checkpoint: 1,
+        checkpoint: 1}},
       }),
     ),
   );

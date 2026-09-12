@@ -1,0 +1,193 @@
+.wutong-mode .masthead {
+  background: #243f40de;
+  color: #f1eedf;
+  border-radius: 18px;
+  padding: 12px 18px;
+}
+.wutong-mode .masthead h1 {
+  font-size: 24px;
+}
+.wutong-mode .masthead h1 span {
+  display: none;
+}
+.wutong-mode .eyebrow,
+.wutong-mode .brand-mark {
+  color: #dbd4b4;
+}
+.wutong-mode .back-to-planet {
+  top: 124px;
+}
+.wutong-hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: #f0efe2;
+}
+.wutong-hud [hidden] {
+  display: none !important;
+}
+.wutong-hud button {
+  pointer-events: auto;
+  touch-action: none;
+  cursor: pointer;
+  border: 1px solid #d9dfc64d;
+  border-radius: 24px;
+  background: #29484ae8;
+  color: inherit;
+  min-height: 44px;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+.wutong-hud button:focus-visible {
+  outline: 3px solid #efcf8a;
+}
+.wutong-top {
+  position: absolute;
+  right: 30px;
+  top: 35px;
+  background: #29484ad9;
+  border-radius: 16px;
+  padding: 15px;
+  font-size: 13px;
+}
+.wutong-top progress {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  height: 5px;
+  accent-color: #e4c888;
+}
+.wutong-card {
+  position: absolute;
+  bottom: 40px;
+  left: 30px;
+  width: min(420px, calc(100% - 60px));
+  padding: 24px;
+  background: #233c3cde;
+  border: 1px solid #ebedd438;
+  border-radius: 22px;
+}
+.wutong-card .fold {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 44px;
+}
+.wutong-card small {
+  letter-spacing: 0.18em;
+  color: #dfcd9a;
+}
+.wutong-card h2 {
+  font: 28px serif;
+  margin: 15px 0;
+}
+.wutong-card p {
+  font-size: 14px;
+  line-height: 1.7;
+}
+.wutong-card .actions,
+.wutong-card .gaze {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.wutong-card .gaze {
+  margin-top: 10px;
+}
+.wutong-card .status {
+  color: #e1d3ab;
+}
+.wutong-hud.collapsed .copy {
+  display: none;
+}
+.wutong-hud.collapsed .wutong-card {
+  padding-top: 42px;
+}
+.wutong-pad {
+  position: absolute;
+  right: 25px;
+  bottom: 65px;
+  display: grid;
+  grid-template-columns: repeat(3, 46px);
+  gap: 6px;
+}
+.wutong-pad button {
+  padding: 0;
+  font-size: 22px;
+}
+.wutong-pad button:first-child {
+  grid-column: 2;
+}
+.wutong-pad button:nth-child(2) {
+  grid-column: 1;
+}
+.wutong-label {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  transform: translate(-50%, -100%);
+  padding: 8px 16px;
+  border-radius: 16px;
+  background: #223e47cc;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.wutong-crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.4;
+}
+.wutong-hud footer {
+  position: absolute;
+  bottom: 10px;
+  left: 30px;
+  font-size: 11px;
+  color: #f0efdf;
+  text-shadow: 0 1px 3px #233e40;
+}
+@media (max-width: 650px) {
+  .wutong-mode .masthead {
+    top: 16px;
+    left: 16px;
+    padding: 10px;
+  }
+  .wutong-mode .masthead h1 {
+    font-size: 20px;
+  }
+  .wutong-mode .back-to-planet {
+    top: 104px;
+    left: 16px;
+  }
+  .wutong-top {
+    top: 148px;
+    right: 16px;
+    font-size: 12px;
+    padding: 10px;
+  }
+  .wutong-card {
+    left: 12px;
+    bottom: 30px;
+    width: calc(100% - 24px);
+    padding: 16px;
+  }
+  .wutong-card h2 {
+    font-size: 23px;
+  }
+  .wutong-card p {
+    font-size: 13px;
+  }
+  .wutong-pad {
+    bottom: 310px;
+    right: 14px;
+  }
+  .wutong-hud footer {
+    font-size: 9px;
+    left: 16px;
+  }
+  .wutong-card button {
+    font-size: 13px;
+    padding: 8px 11px;
+  }
+}

@@ -44,8 +44,6 @@ try {
   });
   await page.goto('http://localhost:3000/');
   await page.getByRole('button', { name: '01 人才公园' }).click();
-  const enter = page.getByRole('button', { name: '走进这段记忆' });
-  if (await enter.count()) await enter.click();
   await page.waitForFunction(
     () =>
       document.querySelector('.scene > [data-scene-id="talent-park"]')

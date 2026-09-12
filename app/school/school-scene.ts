@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { reducedMotion } from '../shared/preferences';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import {
   PlayerController,
@@ -146,6 +147,10 @@ export function createSchool({ host, resources, navigate }: SceneContext) {
     frame = 0;
   let feedback: string = D.estimate;
   const keys = new Set<string>();
+  const skyColor = new THREE.Color(),
+    duskColor = new THREE.Color('#e6c3ac'),
+    nightColor = new THREE.Color('#172c48');
+  const touchMove = new THREE.Vector2();
   const triggers: InteractionTrigger<string>[] = Object.entries(D.spots).map(
     ([id, p]) => ({
       id,
@@ -279,6 +284,10 @@ export function createSchool({ host, resources, navigate }: SceneContext) {
     );
   });
   const key = (name: string, pressed: boolean) => {
+    if (pressed && name === ' ') {
+      if (step !== 'practice' && !resting && !moonActive) physics.jump();
+      return;
+    }
     if (pressed) {
       keys.add(name.toLowerCase());
       guide = false;
@@ -446,16 +455,20 @@ export function createSchool({ host, resources, navigate }: SceneContext) {
         backward.normalize();
         const dx =
             Number(keys.has('d') || keys.has('arrowright')) -
-            Number(keys.has('a') || keys.has('arrowleft')),
+            Number(keys.has('a') || keys.has('arrowleft')) +
+            touchMove.x,
           dz =
             Number(keys.has('s') || keys.has('arrowdown')) -
-            Number(keys.has('w') || keys.has('arrowup'));
+            Number(keys.has('w') || keys.has('arrowup')) +
+            touchMove.y;
         direction
           .copy(backward)
           .multiplyScalar(dz)
           .addScaledVector(new THREE.Vector3(backward.z, 0, -backward.x), dx)
           .normalize();
       }
+      if (touchMove.lengthSq() > 0 && !guide)
+        direction.multiplyScalar(Math.min(1, touchMove.length()));
       if (step === 'run') direction.multiplyScalar(D.run.speed / 3.8);
       physics.update(dt, direction, step !== 'run' && keys.has('shift'));
     } else physics.stop();
@@ -531,17 +544,26 @@ export function createSchool({ host, resources, navigate }: SceneContext) {
         );
       }
       if (seated) {
-        c.legs.forEach((leg) => { leg.rotation.x = -1.2; leg.position.z = 0.3; });
+        c.legs.forEach((leg) => {
+          leg.rotation.x = -1.2;
+          leg.position.z = 0.3;
+        });
         c.body.position.y = 0.72;
         c.head.position.y = 1.3;
       } else {
-        c.legs.forEach((leg) => { leg.position.z = 0; });
+        c.legs.forEach((leg) => {
+          leg.position.z = 0;
+        });
         c.body.position.y = 0.94;
         c.head.position.y = 1.52;
       }
     });
     const goal = target();
-    glow.position.set(goal[0], 1.05 + Math.sin(elapsed * 2) * 0.12, goal[1]);
+    glow.position.set(
+      goal[0],
+      1.05 + (reducedMotion() ? 0 : Math.sin(elapsed * 2) * 0.12),
+      goal[1],
+    );
     glowRing.position.set(goal[0], 0.05, goal[1]);
     glow.visible = glowRing.visible =
       !moonActive && !resting && step !== 'practice';
@@ -553,10 +575,7 @@ export function createSchool({ host, resources, navigate }: SceneContext) {
           ? 0.58 * (restTime / D.sunsetSeconds)
           : 0.05;
     nightBlend = THREE.MathUtils.damp(nightBlend, targetNight, 1, dt);
-    const sky = new THREE.Color('#e6c3ac').lerp(
-      new THREE.Color('#172c48'),
-      nightBlend,
-    );
+    const sky = skyColor.copy(duskColor).lerp(nightColor, nightBlend);
     scene.background = sky;
     (scene.fog as THREE.Fog).color.copy(sky);
     ambient.intensity = 2.5 - nightBlend * 1.3;
@@ -589,6 +608,7 @@ export function createSchool({ host, resources, navigate }: SceneContext) {
   refresh();
   frame = requestAnimationFrame(animate);
   const getState = () => ({
+    resting,
     step,
     reps,
     waypoint,
@@ -621,6 +641,10 @@ export function createSchool({ host, resources, navigate }: SceneContext) {
     resources.defer(() => Reflect.deleteProperty(host, 'schoolDebug'));
   }
   return {
+    move: (x: number, y: number) => {
+      touchMove.set(x, y);
+      if (x || y) guide = false;
+    },
     interact,
     key,
     getState,

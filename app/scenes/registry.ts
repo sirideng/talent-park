@@ -15,7 +15,7 @@ export const SCENES: Readonly<Record<SceneId, SceneDefinition>> = {
   ariaLabel: '可拖动旋转、滚轮缩放的 3D 人才公园', load: async () => {const sceneModule=await import('./talent-park');await sceneModule.prepare();return sceneModule;}},
  'happy-harbor': {id:'happy-harbor',name:'欢乐港湾',status:'ready',layout:'explore',ui:{className:'harbor-mode',eyebrow:'SHENZHEN · ABOVE THE BAY',ownHud:true},loadingMessage:'湾区之光正在亮起…',errorMessage:'欢乐港湾暂时无法展开，请重试。',ariaLabel:'可乘坐湾区之光摩天轮的欢乐港湾',load:async()=>{const chapter=await import('./happy-harbor');await chapter.prepare();return chapter;}},
  'shenzhen-bay': {id:'shenzhen-bay',name:'深圳湾 · 海风抵达清晨',status:'ready',layout:'explore',ui:{className:'bay-mode',eyebrow:'SHENZHEN · FIRST LIGHT',ownHud:true},loadingMessage:'海风正在抵达…',errorMessage:'深圳湾暂时无法展开，请重试。',ariaLabel:'可骑行与漫游的深圳湾记忆章节',load:async()=>{const chapter=await import('./shenzhen-bay');await chapter.prepare();return chapter;}},
- wutong: planned('wutong', '梧桐山'),
+ wutong: {id:'wutong',name:'梧桐山',status:'ready',layout:'explore',ui:{className:'wutong-mode',eyebrow:'SHENZHEN · ABOVE THE CLOUDS',ownHud:true},loadingMessage:'山风正在穿过树林…',errorMessage:'梧桐山暂时无法展开，请重试。',ariaLabel:'可登山和俯瞰深圳的梧桐山',load:async()=>{const chapter=await import('./wutong');await chapter.prepare();return chapter;}},
  school: {id:'school',name:'北京师范大学南山附属中学',status:'ready',layout:'explore',ui:{className:'school-mode',eyebrow:'SHENZHEN · AFTER SCHOOL',ownHud:true},loadingMessage:'正在走进放学后的操场…',errorMessage:'校园暂时无法展开，请重试。',ariaLabel:'可漫游的学校记忆章节',load:async()=>{const chapter=await import('./school');await chapter.prepare();return chapter;}},
  'sea-world': planned('sea-world', '海上世界 · K11'),
  'ping-an': planned('ping-an', '平安金融中心'),

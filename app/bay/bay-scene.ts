@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { reducedMotion } from '../shared/preferences';
 import './bay.css';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import {
@@ -103,6 +104,8 @@ export function createBay({ host, resources, navigate }: SceneContext) {
     last = performance.now(),
     frame = 0;
   const keys = new Set<string>();
+  const sunriseColor = new THREE.Color('#ffe3af');
+  const touchMove = new THREE.Vector2();
   const returnPose = {
     position: new THREE.Vector3(),
     target: new THREE.Vector3(),
@@ -247,6 +250,13 @@ export function createBay({ host, resources, navigate }: SceneContext) {
     if (!watching && !returning) reset();
   });
   const key = (name: string, pressed: boolean) => {
+    if (name === ' ') {
+      if (bicycle.mounted) {
+        if (pressed) keys.add('space');
+        else keys.delete('space');
+      } else if (pressed && !watching && !returning) physics.jump();
+      return;
+    }
     const n = name.toLowerCase();
     if (pressed) {
       keys.add(n);
@@ -416,10 +426,12 @@ export function createBay({ host, resources, navigate }: SceneContext) {
       }
     } else if (!returning) {
       if (bicycle.mounted) {
-        let pedal = held('w', 'arrowup'),
-          brake = held('s', 'arrowdown', 'space'),
+        let pedal = held('w', 'arrowup') || touchMove.y < -0.15,
+          brake = held('s', 'arrowdown', 'space') || touchMove.y > 0.15,
           steer =
-            Number(held('a', 'arrowleft')) - Number(held('d', 'arrowright'));
+            Number(held('a', 'arrowleft')) -
+            Number(held('d', 'arrowright')) -
+            touchMove.x;
         if (guide) {
           const goal = destination(),
             distance = Math.hypot(goal.x - before.x, goal.z - before.z);
@@ -465,14 +477,20 @@ export function createBay({ host, resources, navigate }: SceneContext) {
           direction
             .copy(backward)
             .multiplyScalar(
-              Number(held('s', 'arrowdown')) - Number(held('w', 'arrowup')),
+              Number(held('s', 'arrowdown')) -
+                Number(held('w', 'arrowup')) +
+                touchMove.y,
             )
             .addScaledVector(
               new THREE.Vector3(backward.z, 0, -backward.x),
-              Number(held('d', 'arrowright')) - Number(held('a', 'arrowleft')),
+              Number(held('d', 'arrowright')) -
+                Number(held('a', 'arrowleft')) +
+                touchMove.x,
             )
             .normalize();
         }
+        if (touchMove.lengthSq() > 0 && !guide)
+          direction.multiplyScalar(Math.min(1, touchMove.length()));
         physics.update(dt, direction, held('shift'));
       }
     }
@@ -499,11 +517,20 @@ export function createBay({ host, resources, navigate }: SceneContext) {
               low ? 10 : 24,
             ),
           );
-      camera.position.lerp(desired, 1 - Math.exp(-dt * 2));
-      controls.target.lerp(target, 1 - Math.exp(-dt * 2));
+      camera.position.lerp(
+        desired,
+        reducedMotion() ? 1 : 1 - Math.exp(-dt * 2),
+      );
+      controls.target.lerp(target, reducedMotion() ? 1 : 1 - Math.exp(-dt * 2));
     } else if (returning) {
-      camera.position.lerp(returnPose.position, 1 - Math.exp(-dt * 3));
-      controls.target.lerp(returnPose.target, 1 - Math.exp(-dt * 3));
+      camera.position.lerp(
+        returnPose.position,
+        reducedMotion() ? 1 : 1 - Math.exp(-dt * 3),
+      );
+      controls.target.lerp(
+        returnPose.target,
+        reducedMotion() ? 1 : 1 - Math.exp(-dt * 3),
+      );
       if (camera.position.distanceTo(returnPose.position) < 0.03) {
         returning = false;
         controls.enabled = true;
@@ -541,12 +568,12 @@ export function createBay({ host, resources, navigate }: SceneContext) {
     coast.update(elapsed, dawn);
     ambient.intensity = 1.8 + dawn;
     light.intensity = 1.2 + dawn * 2;
-    light.color.set('#b1bcec').lerp(new THREE.Color('#ffe3af'), dawn);
+    light.color.set('#b1bcec').lerp(sunriseColor, dawn);
     marker.position.copy(destination());
     marker.position.y =
       terrainY(marker.position.x, marker.position.z) +
       1 +
-      Math.sin(elapsed * 2) * 0.1;
+      (reducedMotion() ? 0 : Math.sin(elapsed * 2) * 0.1);
     marker.visible = !watching;
     controls.update();
     renderCamera.copy(camera);
@@ -611,5 +638,15 @@ export function createBay({ host, resources, navigate }: SceneContext) {
     });
     resources.defer(() => Reflect.deleteProperty(host, 'bayDebug'));
   }
-  return { interact, key, reset, getState, dispose: () => resources.dispose() };
+  return {
+    move: (x: number, y: number) => {
+      touchMove.set(x, y);
+      if (x || y) guide = false;
+    },
+    interact,
+    key,
+    reset,
+    getState,
+    dispose: () => resources.dispose(),
+  };
 }

@@ -1,4 +1,5 @@
 import { BAY } from './chapter-data';
+import { readChapter, saveChapter } from '../shared/preferences';
 export type BayProgress = {
   version: 1;
   ride: number;
@@ -19,7 +20,10 @@ export function readProgress(): BayProgress {
     checkpoint: 0,
   };
   try {
-    const p = JSON.parse(localStorage.getItem(BAY.storageKey) ?? 'null');
+    const p = readChapter(
+      'shenzhen-bay',
+      BAY.storageKey,
+    ) as Partial<BayProgress> | null;
     if (!p || p.version !== 1) return empty;
     const number = (v: unknown, max: number) =>
       typeof v === 'number' && Number.isFinite(v)
@@ -40,8 +44,7 @@ export function readProgress(): BayProgress {
 }
 export function saveProgress(p: BayProgress) {
   try {
-    localStorage.setItem(BAY.storageKey, JSON.stringify(p));
-    return true;
+    return saveChapter('shenzhen-bay', p, p.complete);
   } catch {
     return false;
   }

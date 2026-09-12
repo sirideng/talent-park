@@ -1,4 +1,5 @@
 /** Original procedural ambience; no third-party recordings, streaming or timers. */
+import { audioOutput, releaseAudio } from '../shared/preferences';
 export class BayAmbience {
   private context: AudioContext | null = null;
   private sources: AudioScheduledSourceNode[] = [];
@@ -24,7 +25,7 @@ export class BayAmbience {
       this.failed = false;
       const master = c.createGain();
       master.gain.value = 0.1;
-      master.connect(c.destination);
+      master.connect(audioOutput(c));
       this.gain = master;
       const buffer = c.createBuffer(1, c.sampleRate * 8, c.sampleRate),
         data = buffer.getChannelData(0);
@@ -80,6 +81,7 @@ export class BayAmbience {
       void this.context.suspend().catch(() => {});
   }
   dispose() {
+    if (this.context) releaseAudio(this.context);
     this.disposed = true;
     this.stop();
     if (this.context && this.context.state !== 'closed')

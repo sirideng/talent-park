@@ -1,0 +1,288 @@
+:root {
+  --memory-ink: #24444b;
+  --memory-paper: #f7efe0;
+  --memory-gold: #dfbf82;
+  --memory-panel: #25434bed;
+  --memory-line: #e6d8b840;
+}
+.park-app {
+  height: 100dvh;
+  min-height: 0;
+  background: #b8d0d8;
+}
+.scene > div {
+  animation: memory-arrive 0.55s ease-out;
+}
+.scene canvas {
+  touch-action: none;
+  outline-offset: -5px;
+}
+.scene canvas:focus-visible {
+  outline: 2px solid var(--memory-gold);
+}
+@keyframes memory-arrive {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.memory-world button,
+.memory-world select,
+.memory-settings summary {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+.memory-world button:focus-visible,
+.memory-world select:focus-visible,
+.memory-settings summary:focus-visible {
+  outline: 3px solid var(--memory-gold);
+  outline-offset: 3px;
+}
+.memory-world
+  :is(.school-story, .bay-card, .harbor-card, .wutong-card, .resting-panel) {
+  background: var(--memory-panel);
+  color: var(--memory-paper);
+  border: 1px solid var(--memory-line);
+  box-shadow: 0 8px 30px #18364418;
+  border-radius: 20px;
+  transition:
+    opacity 0.7s,
+    transform 0.7s;
+}
+.memory-world :is(.school-story, .bay-card, .harbor-card, .wutong-card) button {
+  background: #365962;
+  color: var(--memory-paper);
+  border: 1px solid var(--memory-line);
+  font-size: 14px;
+}
+.memory-world :is(.school-story, .bay-card, .harbor-card, .wutong-card) p {
+  line-height: 1.65;
+}
+.memory-world .masthead {
+  transition: opacity 0.7s;
+}
+.hud-idle
+  :is(
+    .masthead,
+    .school-caption,
+    .school-story,
+    .bay-card,
+    .harbor-card,
+    .wutong-card,
+    .bottom-bar,
+    .view-tools,
+    .compass,
+    .map-note
+  ) {
+  opacity: 0.08;
+}
+.hud-idle :is(.school-story, .bay-card, .harbor-card, .wutong-card):hover,
+.hud-idle :focus-within {
+  opacity: 1;
+}
+.memory-world :is(.school-pad, .bay-pad, .harbor-pad, .wutong-pad, .touch-pad) {
+  display: none !important;
+}
+.memory-settings {
+  position: absolute;
+  z-index: 35;
+  top: max(22px, env(safe-area-inset-top));
+  right: max(22px, env(safe-area-inset-right));
+  color: var(--memory-paper);
+}
+.memory-settings summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 10px 18px;
+  border-radius: 24px;
+  background: var(--memory-panel);
+  border: 1px solid var(--memory-line);
+}
+.memory-settings > div {
+  position: absolute;
+  right: 0;
+  top: 52px;
+  width: 260px;
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--memory-panel);
+  box-shadow: 0 8px 30px #18364430;
+}
+.memory-settings label {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 15px;
+  font-size: 15px;
+}
+.memory-settings select {
+  background: #365962;
+  color: var(--memory-paper);
+  border-radius: 9px;
+  padding: 8px;
+  border: 1px solid var(--memory-line);
+}
+.memory-settings input {
+  width: 100%;
+  accent-color: var(--memory-gold);
+}
+.memory-settings small {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.memory-settings p {
+  font-size: 14px;
+}
+.memory-world :is(.top-right, .planet-status, .wutong-top, .harbor-compass) {
+  right: 110px;
+}
+.memory-controls {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 25;
+}
+.memory-controls[hidden] {
+  display: none;
+}
+.memory-joystick {
+  position: absolute;
+  left: max(22px, env(safe-area-inset-left));
+  bottom: max(24px, env(safe-area-inset-bottom));
+  width: 116px;
+  height: 116px;
+  border-radius: 50%;
+  background: #25434b55;
+  border: 1px solid #f8ecce66;
+  pointer-events: auto;
+  touch-action: none;
+  display: grid;
+  place-items: center;
+}
+.memory-joystick span {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #f4ead2c9;
+  box-shadow: 0 3px 15px #10282c33;
+  pointer-events: none;
+}
+.memory-mobile-actions {
+  position: absolute;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: max(30px, env(safe-area-inset-bottom));
+  display: flex;
+  gap: 9px;
+  pointer-events: auto;
+}
+.memory-mobile-actions button {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--memory-panel);
+  color: var(--memory-paper);
+  border: 1px solid var(--memory-line);
+  touch-action: none;
+}
+@media (min-width: 851px) and (pointer: fine) {
+  .memory-controls {
+    display: none;
+  }
+}
+@media (max-width: 850px) {
+  .memory-world :is(.school-story, .bay-card, .harbor-card, .wutong-card) {
+    left: 12px;
+    bottom: calc(150px + env(safe-area-inset-bottom));
+    width: calc(100% - 24px);
+    max-height: 34dvh;
+    overflow: auto;
+    padding: 16px;
+  }
+  .memory-world .masthead {
+    max-width: calc(100% - 100px);
+  }
+  .memory-world .eyebrow {
+    font-size: 10px;
+  }
+  .memory-world .masthead h1 {
+    font-size: 20px;
+  }
+  .memory-settings {
+    top: max(18px, env(safe-area-inset-top));
+    right: 12px;
+  }
+  .memory-world :is(.wutong-top, .harbor-compass) {
+    top: 145px;
+    right: 12px;
+  }
+  .memory-world .bottom-bar {
+    bottom: 145px;
+  }
+  .memory-world .nearby-prompt {
+    bottom: 220px;
+  }
+  .memory-world .resting-panel {
+    bottom: 160px;
+    max-height: 38dvh;
+    overflow: auto;
+  }
+  .memory-world :is(.school-key-hint, .instruction, .harbor-help, .bay-help) {
+    display: none;
+  }
+  .memory-route {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .memory-world .back-to-planet {
+    z-index: 30;
+  }
+  .memory-world footer:not(.bottom-bar) {
+    font-size: 12px;
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .memory-world :is(.school-story, .bay-card, .harbor-card, .wutong-card) {
+    left: 150px;
+    bottom: 12px;
+    width: calc(100% - 325px);
+    max-height: 48dvh;
+  }
+  .memory-world :is(.school-caption, .wutong-top, .harbor-compass) {
+    display: none;
+  }
+  .memory-world .masthead {
+    padding: 8px;
+    top: 12px;
+    left: 12px;
+  }
+  .memory-world .back-to-planet {
+    top: 95px;
+    left: 12px;
+  }
+  .memory-world .resting-panel {
+    bottom: 15px;
+    left: 150px;
+    width: calc(100% - 320px);
+  }
+  .memory-world .bottom-bar {
+    bottom: 12px;
+    left: 150px;
+  }
+  .memory-world .nearby-prompt {
+    bottom: 90px;
+  }
+}
+@media (max-width: 850px) {
+  .memory-world
+    :is(.school-story, .bay-card, .harbor-card, .wutong-card, .resting-panel) {
+    transform: none;
+  }
+  .memory-world .masthead h1 {
+    white-space: normal;
+  }
+}
+[data-reduced-motion='true'] * {
+  animation: none !important;
+  scroll-behavior: auto !important;
+  transition-duration: 0.01ms !important;
+}

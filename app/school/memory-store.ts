@@ -1,4 +1,5 @@
 import { SCHOOL_CHAPTER } from './chapter-data';
+import { readChapter, saveChapter } from '../shared/preferences';
 export type SchoolMemory = {
   version: 1;
   afterSchool: boolean;
@@ -13,9 +14,7 @@ export function readSchoolMemory(): SchoolMemory {
     midAutumn: false,
   };
   try {
-    const p: unknown = JSON.parse(
-      localStorage.getItem(SCHOOL_CHAPTER.storageKey) ?? 'null',
-    );
+    const p: unknown = readChapter('school', SCHOOL_CHAPTER.storageKey);
     if (
       typeof p !== 'object' ||
       p === null ||
@@ -35,8 +34,7 @@ export function readSchoolMemory(): SchoolMemory {
 }
 export function saveSchoolMemory(memory: SchoolMemory) {
   try {
-    localStorage.setItem(SCHOOL_CHAPTER.storageKey, JSON.stringify(memory));
-    return true;
+    return saveChapter('school', memory, memory.chapterComplete);
   } catch {
     return false;
   }

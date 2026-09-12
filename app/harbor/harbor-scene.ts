@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { reducedMotion } from '../shared/preferences';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import {
   RAPIER,
@@ -71,6 +72,7 @@ export function createHarbor({ host, resources }: SceneContext) {
     },
   ];
   const keys = new Set<string>();
+  const touchMove = new THREE.Vector2();
   let phase: RidePhase = 'walking',
     view: 'inside' | 'outside' = 'inside',
     angle = 0,
@@ -387,7 +389,11 @@ export function createHarbor({ host, resources }: SceneContext) {
       // Fit both banks even in portrait. Camera is outside the wheel's volume;
       // switches use a brief fade, not a sweep through the glass/steel.
       const distance = Math.max(155, 190 / camera.aspect);
-      renderCamera.position.set(-15, 62 + high * 20, -distance);
+      renderCamera.position.set(
+        -15,
+        reducedMotion() ? 72 : 62 + high * 20,
+        -distance,
+      );
       renderCamera.lookAt(-10, 16, 110);
     }
   };
@@ -438,15 +444,20 @@ export function createHarbor({ host, resources }: SceneContext) {
           const pressed = (a: string, b: string) => keys.has(a) || keys.has(b);
           direction.addScaledVector(
             forward,
-            Number(pressed('w', 'arrowup')) - Number(pressed('s', 'arrowdown')),
+            Number(pressed('w', 'arrowup')) -
+              Number(pressed('s', 'arrowdown')) -
+              touchMove.y,
           );
           direction.addScaledVector(
             right,
             Number(pressed('d', 'arrowright')) -
-              Number(pressed('a', 'arrowleft')),
+              Number(pressed('a', 'arrowleft')) +
+              touchMove.x,
           );
           direction.normalize();
         }
+        if (touchMove.lengthSq() > 0 && !guide)
+          direction.multiplyScalar(Math.min(1, touchMove.length()));
         physics.update(dt, direction, keys.has('shift'));
         const delta = physics.position.clone().sub(previous);
         controls.target.add(delta);
@@ -650,6 +661,10 @@ export function createHarbor({ host, resources }: SceneContext) {
   tick(1 / 60);
   frame = requestAnimationFrame(loop);
   return {
+    move: (x: number, y: number) => {
+      touchMove.set(x, y);
+      if (x || y) guide = false;
+    },
     key: setKey,
     interact,
     reset,
